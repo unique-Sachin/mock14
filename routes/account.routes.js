@@ -95,7 +95,7 @@ accountRouter.patch("/deposit", async (req, res) => {
     } else {
       const accountExist = await accountModel.findById({ _id: id });
       if (accountExist?.email) {
-        const avlBal = accountExist.initBal + amount;
+        const avlBal = Number(accountExist.initBal) + Number(amount);
         const deposite = await accountModel.findByIdAndUpdate(
           id,
           {
@@ -123,7 +123,7 @@ accountRouter.patch("/withdraw", async (req, res) => {
     } else {
       const accountExist = await accountModel.findById({ _id: id });
       if (accountExist?.email) {
-        const avlBal = accountExist.initBal - amount;
+        const avlBal = Number(accountExist.initBal) - Number(amount);
         if (avlBal < 0) {
           res.status(401).send(`insufficient funds`);
         } else {
@@ -157,7 +157,7 @@ accountRouter.patch("/transfer", async (req, res) => {
       if (accountExist?.email) {
         const payee = await accountModel.findOne({ toName, email, panNo });
         if (payee?.email) {
-          const avlBal = accountExist.initBal - amount;
+          const avlBal = Number(accountExist.initBal) - Number(amount);
           if (avlBal < 0) {
             res.status(401).send(`insufficient funds`);
           } else {
