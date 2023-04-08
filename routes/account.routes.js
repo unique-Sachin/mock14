@@ -155,7 +155,11 @@ accountRouter.patch("/transfer", async (req, res) => {
     } else {
       const accountExist = await accountModel.findById({ _id: id });
       if (accountExist?.email) {
-        const payee = await accountModel.findOne({ name:toName, email, panNo });
+        const payee = await accountModel.findOne({
+          name: toName,
+          email,
+          panNo,
+        });
         if (payee?.email) {
           const avlBal = Number(accountExist.initBal) - Number(amount);
           if (avlBal < 0) {
@@ -171,7 +175,7 @@ accountRouter.patch("/transfer", async (req, res) => {
               }
             );
             await accountModel.findByIdAndUpdate(payee._id, {
-              initBal: payee.initBal + amount,
+              initBal: Number(payee.initBal) + Number(amount),
             });
             res.status(200).send({
               msg: `amount transfer successful to ${toName}`,
