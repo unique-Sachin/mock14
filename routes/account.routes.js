@@ -28,11 +28,11 @@ accountRouter.post("/open", async (req, res) => {
     ) {
       res.status(401).send("Please fill all details");
     } else {
-      const accountExist = await accountModel.findOne({ email, panNo });
+      const accountExist = await accountModel.findOne({ email });
       if (accountExist?.email) {
         res.status(200).send({ msg: `Logged In Successfully`, accountExist });
       } else {
-        const newAccount = new accountModel({
+        const createAccount = new accountModel({
           name,
           gender,
           dob,
@@ -43,7 +43,8 @@ accountRouter.post("/open", async (req, res) => {
           adharNo,
           panNo,
         });
-        await newAccount.save();
+        await createAccount.save();
+        const newAccount = await accountModel.findOne({ email });
         res
           .status(200)
           .send({ msg: `Account Created Successfully`, newAccount });
@@ -63,8 +64,8 @@ accountRouter.patch("/update", async (req, res) => {
       const accountExist = await accountModel.findById({ _id: id });
       if (accountExist?.email) {
         const updateKyc = await accountModel.findByIdAndUpdate(
+          id,
           {
-            _id: id,
             name,
             dob,
             email,
@@ -96,8 +97,8 @@ accountRouter.patch("/deposit", async (req, res) => {
       if (accountExist?.email) {
         const avlBal = accountExist.initBal + amount;
         const deposite = await accountModel.findByIdAndUpdate(
+          id,
           {
-            _id: id,
             initBal: avlBal,
           },
           {
@@ -127,8 +128,8 @@ accountRouter.patch("/withdraw", async (req, res) => {
           res.status(401).send(`insufficient funds`);
         } else {
           const withdraw = await accountModel.findByIdAndUpdate(
+            id,
             {
-              _id: id,
               initBal: avlBal,
             },
             {
@@ -161,16 +162,15 @@ accountRouter.patch("/transfer", async (req, res) => {
             res.status(401).send(`insufficient funds`);
           } else {
             const transfer = await accountModel.findByIdAndUpdate(
+              id,
               {
-                _id: id,
                 initBal: avlBal,
               },
               {
                 new: true,
               }
             );
-            await accountModel.findByIdAndUpdate({
-              _id: payee._id,
+            await accountModel.findByIdAndUpdate(payee._id, {
               initBal: payee.initBal + amount,
             });
             res.status(200).send({
